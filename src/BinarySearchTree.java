@@ -14,8 +14,13 @@ public class BinarySearchTree<E> extends AbstractSet<E> {
         this.root = null;
     }
 
+    /**
+     * Given some data of generic type, will create a new node with said data. Then traverse the tree a look for a spot
+     * to add the new node. If there already exists a node with the given data, the new node will not be added.
+     * @param data The data to be added to the tree
+     * @return A boolean representing whether or not the new node was in fact added to the tree
+     */
     public boolean add(E data) {
-        //TODO needs to be completed
         Node<E> temp = new Node<>(data);
         boolean isAdded = false;
 
@@ -23,15 +28,27 @@ public class BinarySearchTree<E> extends AbstractSet<E> {
         else {
             Node<E> current = this.root;
 
-            while(!isAdded) {
+            while(!isAdded) { // Traverse the tree looking where to add new node.
                 int comparison = this.compare(data, current.getData());
 
-                if(comparison < 0) {
+                if(comparison < 0) { // data is less than current node data
+                    if(current.getLeft() == null) { // Can add new node
+                        current.setLeft(temp);
+                        isAdded = true;
+                    } else { // Keep traversing
+                        current = current.getLeft();
+                    }
 
-                } else if(comparison > 0) {
+                } else if(comparison > 0) { // data is greater than current node data
+                    if(current.getRight() == null) { // Can add new node
+                        current.setRight(temp);
+                        isAdded = true;
+                    } else { // Keep traversing
+                        current = current.getRight();
+                    }
 
                 } else { // Elements are equal, no duplicates are allowed
-                    isAdded = true;
+                    break;
                 }
             }
         }
@@ -39,16 +56,50 @@ public class BinarySearchTree<E> extends AbstractSet<E> {
         return isAdded;
     }
 
+    /**
+     * Uses the find(E data) method to determine whether or not a not with the given data exists.
+     * If the find method returns a Node then a node with the given data exists, else one does not exists.
+     * @param data The data to find in the tree.
+     * @return A boolean if a Node with the given data exists in the tree.
+     */
     @Override
     public boolean contains(Object data) {
-        //TODO complete this method using an algorithm then is better than O(n)
-        return false;
+        return this.findNode((E) data) != null;
     }
 
     @Override
     public boolean remove(Object data) {
         //TODO complete this method to remove an element from the tree if it exists
         return false;
+    }
+
+    /**
+     * Given some data, will traverse the tree and look for the Node that contains that data.
+     * @param data The data to find in the tree.
+     * @return A Node if a node containing the given data does exist, otherwise null.
+     */
+    private Node<E> findNode(E data) {
+        Node<E> temp = null;
+        Node<E> current = this.root;
+
+        while(temp == null) {
+            int comparison = compare(data, current.getData());
+
+            if(comparison < 0) { // data is less than current node data
+                Node<E> left = current.getLeft();
+                if(left != null) {
+                    current = left;
+                }
+            } else if(comparison > 0) { // data is greater than current node data
+                Node<E> right = current.getRight();
+                if(right != null) {
+                    current = right;
+                }
+            } else { // Elements are equal, so node exists in tree.
+                temp = current;
+            }
+        }
+        return temp;
     }
 
     /**

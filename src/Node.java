@@ -12,6 +12,8 @@ public class Node<E> {
     public E getData() {return this.data;}
     public Node<E> getLeft() {return this.left;}
     public Node<E> getRight() {return this.right;}
+    public void setLeft(Node<E> data) {this.left = data;}
+    public void setRight(Node<E> data) {this.right = data;}
 
     @Override
     public String toString() {
