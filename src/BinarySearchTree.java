@@ -67,10 +67,63 @@ public class BinarySearchTree<E> extends AbstractSet<E> {
         return this.findNode((E) data) != null;
     }
 
+    /**
+     * Traverse the tree comparing nodes to the given data, if while traversing a node is found to contain the given data
+     * that node will be removed from the tree.
+     * @param data The data to be removed from the tree
+     * @return A boolean stating whether or not a node containing the given data was in fact removed from the tree
+     */
     @Override
     public boolean remove(Object data) {
-        //TODO complete this method to remove an element from the tree if it exists
-        return false;
+        //TODO Refine logic for node removal
+        Node<E> previous = null;
+        Node<E> current = this.root;
+
+        boolean isRemoved = false;
+        boolean isLeft = false;
+        boolean isRight = false;
+
+
+        // An initial check to see if the item to be removed is the root
+        if(compare((E) data, current.getData()) == 0) {
+            this.root = this.findNewRoot();
+            this.size--;
+            isRemoved = true;
+
+        }
+
+        while(!isRemoved) { // If current is null, the end of the tree as been reached and the node does not exist
+            int comparison = compare((E) data, current.getData());
+
+            if(comparison < 0) { // data is less than current node data
+                Node<E> left = current.getLeft();
+                if(left != null) {
+                    previous = current;
+                    current = left;
+
+                    // Keep track of direction of traverse
+                    isLeft = true;
+                    isRight = false;
+                }
+            } else if(comparison > 0) { // data is greater than current node data
+                Node<E> right = current.getRight();
+                if(right != null) {
+                    previous = current;
+                    current = right;
+
+                    // Keep track of direction of traverse
+                    isRight = true;
+                    isLeft = false;
+                }
+            } else { // Elements are equal, this is the node to be removed.
+                if(isLeft) { previous.setLeft(null);}
+                else if(isRight) {previous.setRight(null);}
+                isRemoved = true;
+                this.size --;
+            }
+        }
+
+        return isRemoved;
     }
 
     /**
@@ -114,8 +167,16 @@ public class BinarySearchTree<E> extends AbstractSet<E> {
      * -1: element a is less that element b
      */
     private int compare(E a, E b) {
-        //TODO Fill out the compare method so that it may be used when adding elements.
-        return 0;
+        if (a instanceof Comparable && b instanceof Comparable && this.comparator == null) {
+            return ((Comparable) a).compareTo(b); // Unchecked
+        } else {
+            return this.comparator.compare(a,b);
+        }
+    }
+
+    private Node<E> findNewRoot() {
+        //TODO complete logic to find new root node
+        return new Node<E>((E)1);
     }
 
     @Override
