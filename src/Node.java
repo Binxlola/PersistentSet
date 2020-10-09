@@ -17,6 +17,6 @@ public class Node<E> {
 
     @Override
     public String toString() {
-        return "";
+        return this.data.toString();
     }
 }
