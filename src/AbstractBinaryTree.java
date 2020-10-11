@@ -21,31 +21,46 @@ public abstract class AbstractBinaryTree<E> {
     public boolean add(E data) {
         Node<E> temp = new Node<>(data);
         boolean isAdded = false;
+        boolean isPersistent = isPersistent();
 
         // No root Node exists, so we set this temp Node as the root
         if(this.root == null) {
             this.root = temp;
+            if(isPersistent) {
+                persist(temp, null, "root");
+            }
             isAdded = true;
         }
         else {
             Node<E> current = this.root;
+            Node<E> previous = null;
 
             while(!isAdded) { // Traverse the tree looking where to add new node.
+                assert current != null;
                 int comparison = compare(data, current.getData());
 
                 if(comparison < 0) { // data is less than current node data
-                    if(current.getLeft() == null) { // Can add new node
+                    if(current.getLeft() == null && !isPersistent) { // Can add new node
                         current.setLeft(temp);
                         isAdded = true;
-                    } else { // Keep traversing
+                    }
+                    else if (current.getLeft() == null && isPersistent) {
+                        persist(current, previous, "left");
+                    }
+                    else { // Keep traversing
+                        previous = current;
                         current = current.getLeft();
                     }
 
                 } else if(comparison > 0) { // data is greater than current node data
-                    if(current.getRight() == null) { // Can add new node
+                    if(current.getRight() == null && !isPersistent) { // Can add new node
                         current.setRight(temp);
                         isAdded = true;
-                    } else { // Keep traversing
+                    } else if(current.getRight() == null && isPersistent) {
+                        persist(current, previous, "right");
+                    }
+                    else  { // Keep traversing
+                        previous = current;
                         current = current.getRight();
                     }
 
@@ -54,7 +69,7 @@ public abstract class AbstractBinaryTree<E> {
                 }
             }
         }
-        if(isAdded) {this.size++;}
+        if(isAdded && !isPersistent) {this.size++;}
         return isAdded;
     }
 
@@ -152,4 +167,5 @@ public abstract class AbstractBinaryTree<E> {
     }
 
     abstract boolean isPersistent();
+    abstract void persist(Node<E> currentNode, Node<E>  previousNode, String position);
 }

@@ -2,6 +2,7 @@ public class Node<E> {
 
     private Node<E> left, right;
     private final E data;
+    private int version;
 
     public Node(E data) {
         this.data = data;

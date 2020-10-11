@@ -76,4 +76,10 @@ public class BinarySearchTree<E> extends AbstractBinaryTree<E> {
 
     @Override
     public boolean isPersistent() {return false;}
+
+    /**
+     * Just here to meet extends requirements, logic not needed here.
+     */
+    @Override
+    public void persist(Node<E> current, Node<E> previous, String position){};
 }
