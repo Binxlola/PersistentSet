@@ -1,3 +1,5 @@
+import java.util.Comparator;
+
 public abstract class AbstractBinaryTree<E> {
 
     private int size;
@@ -6,11 +8,30 @@ public abstract class AbstractBinaryTree<E> {
     }
 
     private Node<E> root;
+    private Comparator<? super Object> comparator;
     public Node<E> getRoot() {
         return root;
     }
+    public void setRoot(Node<E> root) {this.root = root;}
 
-    abstract int compare(E a, E b);
+    /**
+     * Taking two elements of generic type will compare the two, if a comparator has not been set it is assumed that
+     * the elements are comparable and will be compared using standard compareTo. If a comparator has been set, the
+     * comparator will be used to compare the two elements instead.
+     * @param a The first element being compared
+     * @param b The second element being compared
+     * @return A int representing the comparison results.
+     * 0: the elements are equal
+     * 1: element a is greater than element b
+     * -1: element a is less that element b
+     */
+    public int compare(Object a, Object b) {
+        if (a instanceof Comparable && b instanceof Comparable && this.comparator == null) {
+            return ((Comparable) a).compareTo(b); // Unchecked
+        } else {
+            return this.comparator.compare(a,b);
+        }
+    }
 
     /**
      * Given some data of generic type, will create a new node with said data. Then traverse the tree a look for a spot
@@ -22,48 +43,50 @@ public abstract class AbstractBinaryTree<E> {
         Node<E> temp = new Node<>(data);
         boolean isAdded = false;
         boolean isPersistent = isPersistent();
+        String dir;
+        int level = 1;
 
         // No root Node exists, so we set this temp Node as the root
-        if(this.root == null) {
+        // A persistent tree will always have a root is it enters this method
+        if(this.root == null && !isPersistent) {
             this.root = temp;
-            if(isPersistent) {
-                persist(temp, null, "root");
-            }
             isAdded = true;
         }
         else {
             Node<E> current = this.root;
-            Node<E> previous = null;
 
             while(!isAdded) { // Traverse the tree looking where to add new node.
                 assert current != null;
                 int comparison = compare(data, current.getData());
 
                 if(comparison < 0) { // data is less than current node data
+                    dir = "left";
                     if(current.getLeft() == null && !isPersistent) { // Can add new node
                         current.setLeft(temp);
                         isAdded = true;
                     }
                     else if (current.getLeft() == null && isPersistent) {
-                        persist(current, previous, "left");
+                        persist(current, temp, dir, level, true);
+                        isAdded = true;
                     }
                     else { // Keep traversing
-                        previous = current;
+                        persist(current, temp, dir, level, false);
                         current = current.getLeft();
                     }
-
+                    level++;
                 } else if(comparison > 0) { // data is greater than current node data
+                    dir = "right";
                     if(current.getRight() == null && !isPersistent) { // Can add new node
                         current.setRight(temp);
                         isAdded = true;
-                    } else if(current.getRight() == null && isPersistent) {
-                        persist(current, previous, "right");
-                    }
-                    else  { // Keep traversing
-                        previous = current;
+                    }else if (current.getRight() == null && isPersistent) {
+                        persist(current, temp, dir, level, true);
+                        isAdded = true;
+                    } else  { // Keep traversing
+                        persist(current, temp, dir, level, false);
                         current = current.getRight();
                     }
-
+                    level++;
                 } else { // Elements are equal, no duplicates are allowed
                     break;
                 }
@@ -167,5 +190,7 @@ public abstract class AbstractBinaryTree<E> {
     }
 
     abstract boolean isPersistent();
-    abstract void persist(Node<E> currentNode, Node<E>  previousNode, String position);
+    abstract void persist(Node<E> currentNode, Node<E>  previousNode, String position, int level, boolean toAdd);
+
+    public abstract int getNumVersions();
 }

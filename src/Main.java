@@ -1,10 +1,9 @@
 public class Main {
 
     public static void main(String[] args) {
-        BinarySearchTree<Integer> tree = new BinarySearchTree<>();
+        DynamicBinaryTree<Integer> tree = new DynamicBinaryTree<Integer>();
         tree.add(5);
-        System.out.println(tree.contains(5));
-        tree.remove(5);
-        System.out.println(tree.contains(5));
+        tree.add(3);
+        tree.add(2);
     }
 }

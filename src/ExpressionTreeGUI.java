@@ -208,10 +208,22 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
 
             g.setColor(Color.red);
             if (current.getLeft() != null) {
+                if(tree.isPersistent()) {
+                    //#TODO change from to to user selected view version
+                    if(current.getLeft().getVersion() != 1) {
+                        g.setColor(Color.green);
+                    }
+                }
                 Point leftPoint = map.get(current.getLeft());
                 g.drawLine(currentX, currentY, leftPoint.x, leftPoint.y - BOX_SIZE / 2);
             }
             if (current.getRight() != null) {
+                if(tree.isPersistent()) {
+                    //#TODO change from to to user selected view version
+                    if (current.getRight().getVersion() != 1) {
+                        g.setColor(Color.green);
+                    }
+                }
                 Point rightPoint = map.get(current.getRight());
                 g.drawLine(currentX, currentY, rightPoint.x, rightPoint.y - BOX_SIZE / 2);
 
