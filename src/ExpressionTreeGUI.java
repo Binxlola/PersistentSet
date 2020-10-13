@@ -23,8 +23,8 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
 
     private final JButton addButton, removeButton;
 
-    private DrawPanel drawPanel;
-    private SetupPanel setupPanel;
+    private final DrawPanel drawPanel;
+    private final SetupPanel setupPanel;
     private AbstractBinaryTree<String> tree;
     private int numberNodes = 0;
     private JTextField dataField;
@@ -32,6 +32,7 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
     public static int PANEL_W = 700;
     private JLabel nodeCounterLabel;
     private final int BOX_SIZE = 40;
+    private int selectedVersion = 0;
 
     public void start(AbstractBinaryTree<String> tree) {
         this.tree = tree;
@@ -44,7 +45,11 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
         buttonPanel.add(removeButton);
         add(drawPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
-        nodeCounterLabel = new JLabel("Number of Nodes: " + 0);
+
+        // Node count display
+        nodeCounterLabel = new JLabel();
+        this.displayNodeCount(numberNodes);
+
         add(nodeCounterLabel, BorderLayout.NORTH);
         revalidate();
     }
@@ -76,6 +81,7 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
 
         if (source == addButton) {   //finish this button event to handle the evaluation and output to infix of the tree
             tree.add(dataField.getText().trim());
+            if(tree.isPersistent()) {selectedVersion++;}
             dataField.setText(null);
 
         } else if(source == removeButton) {
@@ -83,13 +89,18 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
             dataField.setText(null);
         }
         drawPanel.repaint();
+        this.displayNodeCount(numberNodes);
     }
 
-    private class SetupPanel extends JPanel implements ActionListener {
+    private void displayNodeCount(int count) {
+        nodeCounterLabel.setText("Number of Nodes: " + count);
+    }
 
-        private JRadioButton binary, binaryPersistent, redBlackPersistent;
-        private JButton confirm;
-        private ExpressionTreeGUI parent;
+    private static class SetupPanel extends JPanel implements ActionListener {
+
+        private final JRadioButton binary, binaryPersistent, redBlackPersistent;
+        private final JButton confirm;
+        private final ExpressionTreeGUI parent;
 
         public SetupPanel(ExpressionTreeGUI parent) {
             super();
@@ -143,7 +154,6 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
 
             if(source.equals(confirm)) {
                 JRadioButton selected = null;
-                AbstractBinaryTree tree = null;
 
                 // Find the select option
                 for(Component component : components) {
@@ -185,11 +195,11 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
         }
 
         public void drawTree(Graphics g, int width) {
-            drawNode(g, tree.getRoot(), BOX_SIZE, 0, 0, new HashMap<Node<? extends Object>, Point>());
+            numberNodes = drawNode(g, tree.getRoot(), BOX_SIZE, 0, 1, new HashMap<>());
         }
 
         private int drawNode(Graphics g, Node current,
-                             int x, int level, int nodeCount, Map<Node<? extends Object>, Point> map) {
+                             int x, int level, int nodeCount, Map<Node<?>, Point> map) {
 
 
             //recursive call
@@ -210,7 +220,7 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
             if (current.getLeft() != null) {
                 if(tree.isPersistent()) {
                     //#TODO change from to to user selected view version
-                    if(current.getLeft().getVersion() != 1) {
+                    if(current.getLeft().getVersion() == selectedVersion) {
                         g.setColor(Color.green);
                     }
                 }
@@ -220,7 +230,7 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
             if (current.getRight() != null) {
                 if(tree.isPersistent()) {
                     //#TODO change from to to user selected view version
-                    if (current.getRight().getVersion() != 1) {
+                    if (current.getRight().getVersion() == selectedVersion) {
                         g.setColor(Color.green);
                     }
                 }

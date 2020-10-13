@@ -34,13 +34,13 @@ public class DynamicBinaryTree<E> extends AbstractBinaryTree<E> {
             versions.add(super.getRoot());
             super.setRoot(clone);
             numVersions++;
-        } else if (level > 1 && !toAdd) {
-            E lastRight = lastEdited.getRight().getData();
-            E lastLeft = lastEdited.getLeft().getData();
+        } else if (level > 1) {
+            Node<E> lastLeft = lastEdited.getLeft();
+            Node<E> lastRight = lastEdited.getRight();
             E currentData = current.getData();
-            if (currentData.equals(lastLeft)) {
+            if (lastLeft != null && currentData.equals(lastLeft.getData())) {
                 lastEdited.setLeft(clone);
-            } else if (currentData.equals(lastRight)) {
+            } else if (lastRight != null && currentData.equals(lastRight.getData())) {
                 lastEdited.setRight(clone);
             }
         }
