@@ -1,4 +1,3 @@
-import java.util.Comparator;
 import java.util.Iterator;
 
 public class BinarySearchTree<E> extends AbstractBinaryTree<E> {
@@ -62,7 +61,7 @@ public class BinarySearchTree<E> extends AbstractBinaryTree<E> {
      * Just here to meet extends requirements, logic not needed here.
      */
     @Override
-    public void persist(Node<E> current, Node<E> previous, String position, int level, boolean toAdd){}
+    public void persist(Node<E> persistNode, Node<E> modifyNode, String position, int level, String action, boolean modify){}
 
     @Override
     public int getNumVersions() { return 0;}

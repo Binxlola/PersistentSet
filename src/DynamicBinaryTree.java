@@ -12,6 +12,7 @@ public class DynamicBinaryTree<E> extends AbstractBinaryTree<E> {
 
     @Override
     public boolean add(E data) {
+        // Short cut the parent and just directly add the root to the tree
         if(super.getRoot() == null) {
             numVersions++;
             super.setRoot(new Node<E>(data));
@@ -26,8 +27,8 @@ public class DynamicBinaryTree<E> extends AbstractBinaryTree<E> {
     public boolean isPersistent() {return true;}
 
     @Override
-    public void persist(Node<E> current, Node<E> newNode, String position, int level, boolean toAdd) {
-        Node<E> clone = new Node<E>(current.getData(), current.getLeft(), current.getRight());
+    public void persist(Node<E> persistNode, Node<E> modifyNode, String position, int level, String action, boolean modify) {
+        Node<E> clone = new Node<E>(persistNode.getData(), persistNode.getLeft(), persistNode.getRight());
 
         // Currently at the root of the current/old version. New version needs to get created
         if (level == 1) {
@@ -35,9 +36,10 @@ public class DynamicBinaryTree<E> extends AbstractBinaryTree<E> {
             super.setRoot(clone);
             numVersions++;
         } else if (level > 1) {
+            // Traversing Nodes
             Node<E> lastLeft = lastEdited.getLeft();
             Node<E> lastRight = lastEdited.getRight();
-            E currentData = current.getData();
+            E currentData = persistNode.getData();
             if (lastLeft != null && currentData.equals(lastLeft.getData())) {
                 lastEdited.setLeft(clone);
             } else if (lastRight != null && currentData.equals(lastRight.getData())) {
@@ -47,13 +49,17 @@ public class DynamicBinaryTree<E> extends AbstractBinaryTree<E> {
         lastEdited = clone;
         lastEdited.setVersion(numVersions);
 
-        if (position.equals("left") && toAdd) {
-            lastEdited.setLeft(newNode);
-        } else if (position.equals("right") && toAdd) {
-            lastEdited.setRight(newNode);
+        // At location where node needs to be added
+        if(modify) {
+            if (position.equals("left")) {
+                lastEdited.setLeft(action.equals("add") ? modifyNode : null);
+            } else if (position.equals("right")) {
+                lastEdited.setRight(action.equals("add") ? modifyNode : null);
+            }
         }
 
-        if(newNode.getVersion() != numVersions) {newNode.setVersion(numVersions);}
+        // Make sure new node version is up to date
+        if(modifyNode.getVersion() != numVersions) {modifyNode.setVersion(numVersions);}
     }
 
     public int getNumVersions() {return this.numVersions;}

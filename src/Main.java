@@ -5,5 +5,7 @@ public class Main {
         tree.add(5);
         tree.add(3);
         tree.add(2);
+        //#TODO sort out the remove for persistence
+        tree.remove(2);
     }
 }
