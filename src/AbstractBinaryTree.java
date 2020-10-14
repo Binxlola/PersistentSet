@@ -117,13 +117,17 @@ public abstract class AbstractBinaryTree<E> {
 
         // An initial check to see if the item to be removed is the root
         if(compare((E) data, current.getData()) == 0) {
-            this.root = this.findNewRoot(this.root);
-            this.size--;
+            if(isPersistent) { // Create a new version with the new root node
+                persist(this.findNewRoot(this.root), this.root, null, level, "remove", false);
+            } else {
+                this.root = this.findNewRoot(this.root);
+                this.size--;
+            }
             isRemoved = true;
 
         }
 
-        while(!isRemoved) { // If current is null, the end of the tree as been reached and the node does not exist
+        while(!isRemoved && current != null) { // If current is null, the end of the tree as been reached and the node does not exist
             int comparison = compare((E) data, current.getData());
 
             if(comparison < 0) { // data is less than current node data
@@ -159,12 +163,13 @@ public abstract class AbstractBinaryTree<E> {
             } else { // Elements are equal, this is the node to be removed.
                 if(isPersistent) {
                     persist(previous, current, isLeft ? "left" : "right", level, "remove", true);
+                    current = null;
                 } else {
                     if(isLeft) { previous.setLeft(null);}
                     else if(isRight) {previous.setRight(null);}
                     this.size --;
                 }
-                isRemoved = true;
+                //#TODO needs to be changed to find the child nodes of the node being removed
             }
         }
 

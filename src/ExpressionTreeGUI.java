@@ -26,7 +26,7 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
     private final DrawPanel drawPanel;
     private final SetupPanel setupPanel;
     private AbstractBinaryTree<String> tree;
-    private int numberNodes = 0;
+    public int numberNodes = 0;
     private JTextField dataField;
     public static int PANEL_H = 500;
     public static int PANEL_W = 700;
@@ -86,10 +86,10 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
 
         } else if(source == removeButton) {
             tree.remove(dataField.getText().trim());
+            if(tree.isPersistent()) {selectedVersion++;}
             dataField.setText(null);
         }
         drawPanel.repaint();
-        this.displayNodeCount(numberNodes);
     }
 
     private void displayNodeCount(int count) {
@@ -195,7 +195,9 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
         }
 
         public void drawTree(Graphics g, int width) {
-            numberNodes = drawNode(g, tree.getRoot(), BOX_SIZE, 0, 1, new HashMap<>());
+            if(tree.getRoot() != null) {
+               nodeCounterLabel.setText("Number of Nodes: " + drawNode(g, tree.getRoot(), BOX_SIZE, 0, 0, new HashMap<>()));
+            }
         }
 
         private int drawNode(Graphics g, Node current,
@@ -216,24 +218,12 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
                 nodeCount = drawNode(g, current.getRight(), x, level + 1, nodeCount, map);
             }
 
-            g.setColor(Color.red);
+            g.setColor(current.getVersion() == selectedVersion && tree.isPersistent() ? Color.green : Color.red);
             if (current.getLeft() != null) {
-                if(tree.isPersistent()) {
-                    //#TODO change from to to user selected view version
-                    if(current.getLeft().getVersion() == selectedVersion) {
-                        g.setColor(Color.green);
-                    }
-                }
                 Point leftPoint = map.get(current.getLeft());
                 g.drawLine(currentX, currentY, leftPoint.x, leftPoint.y - BOX_SIZE / 2);
             }
             if (current.getRight() != null) {
-                if(tree.isPersistent()) {
-                    //#TODO change from to to user selected view version
-                    if (current.getRight().getVersion() == selectedVersion) {
-                        g.setColor(Color.green);
-                    }
-                }
                 Point rightPoint = map.get(current.getRight());
                 g.drawLine(currentX, currentY, rightPoint.x, rightPoint.y - BOX_SIZE / 2);
 

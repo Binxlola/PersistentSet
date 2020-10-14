@@ -46,11 +46,13 @@ public class DynamicBinaryTree<E> extends AbstractBinaryTree<E> {
                 lastEdited.setRight(clone);
             }
         }
-        lastEdited = clone;
+
+        // When removing a node when we reach the end with the node for removal we leave last edited the same
+        lastEdited = (action.equals("remove") && modify) ? lastEdited : clone;
         lastEdited.setVersion(numVersions);
 
         // At location where node needs to be added
-        if(modify) {
+        if(modify && lastEdited != null) {
             if (position.equals("left")) {
                 lastEdited.setLeft(action.equals("add") ? modifyNode : null);
             } else if (position.equals("right")) {
@@ -59,7 +61,7 @@ public class DynamicBinaryTree<E> extends AbstractBinaryTree<E> {
         }
 
         // Make sure new node version is up to date
-        if(modifyNode.getVersion() != numVersions) {modifyNode.setVersion(numVersions);}
+        if(modifyNode.getVersion() != numVersions && modify) {modifyNode.setVersion(numVersions);}
     }
 
     public int getNumVersions() {return this.numVersions;}
