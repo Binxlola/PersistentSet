@@ -3,10 +3,6 @@ import java.util.Iterator;
 public class BinarySearchTree<E> extends AbstractBinaryTree<E> {
 
     public BinarySearchTree() {super();}
-    public BinarySearchTree(Node<E> initialRoot) {
-        super();
-        super.setRoot(initialRoot);
-    }
 
     /**
      * Uses the find(E data) method to determine whether or not a not with the given data exists.
@@ -65,6 +61,4 @@ public class BinarySearchTree<E> extends AbstractBinaryTree<E> {
 
     @Override
     public int getNumVersions() { return 0;}
-
-    ;
 }

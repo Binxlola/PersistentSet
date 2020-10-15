@@ -3,6 +3,7 @@ public class Node<E> {
     private Node<E> left, right;
     private final E data;
     private int version;
+    private boolean isRed; // false represents black
 
     public Node(E data) {
         this.data = data;

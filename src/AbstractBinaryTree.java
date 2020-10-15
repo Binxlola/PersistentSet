@@ -3,6 +3,7 @@ import java.util.Comparator;
 public abstract class AbstractBinaryTree<E> {
 
     private int size;
+
     public int size() {
         return this.size;
     }
@@ -104,7 +105,6 @@ public abstract class AbstractBinaryTree<E> {
      * @return A boolean stating whether or not a node containing the given data was in fact removed from the tree
      */
     public boolean remove(Object data) {
-        //TODO Refine logic for node removal
         Node<E> previous = null;
         Node<E> current = this.root;
         boolean isPersistent = isPersistent();
@@ -116,11 +116,11 @@ public abstract class AbstractBinaryTree<E> {
 
 
         // An initial check to see if the item to be removed is the root
-        if(compare((E) data, current.getData()) == 0) {
+        if(compare(data, current.getData()) == 0) {
             if(isPersistent) { // Create a new version with the new root node
-                persist(this.findNewRoot(this.root), this.root, null, level, "remove", false);
+                persist(this.findReplacementNode(this.root), this.root, null, level, "remove", false);
             } else {
-                this.root = this.findNewRoot(this.root);
+                this.root = this.findReplacementNode(this.root);
                 this.size--;
             }
             isRemoved = true;
@@ -128,7 +128,7 @@ public abstract class AbstractBinaryTree<E> {
         }
 
         while(!isRemoved && current != null) { // If current is null, the end of the tree as been reached and the node does not exist
-            int comparison = compare((E) data, current.getData());
+            int comparison = compare(data, current.getData());
 
             if(comparison < 0) { // data is less than current node data
                 Node<E> left = current.getLeft();
@@ -162,7 +162,7 @@ public abstract class AbstractBinaryTree<E> {
                 }
             } else { // Elements are equal, this is the node to be removed.
                 if(isPersistent) {
-                    persist(previous, current, isLeft ? "left" : "right", level, "remove", true);
+                    persist(previous, this.findReplacementNode(current), isLeft ? "left" : "right", level, "remove", true);
                     current = null;
                 } else {
                     if(isLeft) { previous.setLeft(null);}
@@ -176,7 +176,7 @@ public abstract class AbstractBinaryTree<E> {
         return isRemoved;
     }
 
-    private Node<E> findNewRoot(Node<E> toBeRemoved) {
+    private Node<E> findReplacementNode(Node<E> toBeRemoved) {
         Node<E> replacementNode = null;
 
         // Node being removed only has one child node
