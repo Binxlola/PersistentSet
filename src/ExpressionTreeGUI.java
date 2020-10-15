@@ -36,6 +36,7 @@ public class ExpressionTreeGUI extends JPanel implements ActionListener {
 
     public void start(AbstractBinaryTree<Integer> tree) {
         this.tree = tree;
+
         remove(setupPanel);
 
         JPanel buttonPanel = new JPanel();

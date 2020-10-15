@@ -32,8 +32,11 @@ public class DynamicBinaryTree<E> extends AbstractBinaryTree<E> {
         // Shortcut the parent and just directly add the root to the tree
         if(super.getRoot() == null) {
             numVersions++;
-            super.setRoot(new Node<>(data));
-            super.getRoot().setVersion(numVersions);
+
+            Node<E> root = new Node<>(data);
+            root.setVersion(numVersions);
+            super.setRoot(root);
+
             return true;
         } else {
             return super.add(data);
