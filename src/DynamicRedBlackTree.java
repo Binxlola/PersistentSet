@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class DynamicRedBlackTree<E> extends AbstractBinaryTree<E> {
 
@@ -25,12 +24,12 @@ public class DynamicRedBlackTree<E> extends AbstractBinaryTree<E> {
         if(super.getRoot() == null) {
             numVersions++;
 
-            Node<E> root = new Node<>(data);
-            root.setRed(false);
-            root.setVersion(numVersions);
-            super.setRoot(root);
+//            Node<E> root = new Node<>(data);
+//            root.setRed(false);
+//            root.setVersion(numVersions);
+//            super.setRoot(root);
 
-//            super.setRoot(test());
+            super.setRoot(test());
 
             return true;
         } else { // Not root node, continue normal add logic
@@ -95,7 +94,7 @@ public class DynamicRedBlackTree<E> extends AbstractBinaryTree<E> {
 
             // #TODO is this condition correct?
             if(editedNodes.size() > 1) {
-                this.balance(modifyNode, position);
+                this.balance(modifyNode);
             }
 
             this.editedNodes.clear();
@@ -109,118 +108,126 @@ public class DynamicRedBlackTree<E> extends AbstractBinaryTree<E> {
         }
     }
 
-    private void balance(Node<E> modifyNode, String position) {
+    private void balance(Node<E> modifyNode) {
         // move back 2 steps as last edited node will be parent.
         Node<E> grandparent = editedNodes.get(editedNodes.size() - 2);
         Node<E> parent = editedNodes.get(editedNodes.size() - 1);
-        Node<E> uncle = null;
+        Node<E> uncle;
+        boolean uncleIsRed= false;
 
         while(parent.isRed()) {
-            // Insert case 1 check and find the uncle
             if(grandparent.getLeft() != null && grandparent.getLeftData().equals(parent.getData())) { // Uncle is on right side
                 uncle = grandparent.getRight();
-                if(this.reColour(grandparent, parent, uncle)) {
-                    position = "left";
-
+                uncleIsRed = uncle != null && uncle.isRed();
+                if (this.reColour(grandparent, parent, uncle)) {
                     modifyNode = grandparent;
-                    parent = editedNodes.get(editedNodes.indexOf(grandparent) - 1);
-                    grandparent = editedNodes.get(editedNodes.indexOf(parent) - 1);
-                    uncle = ((Comparable) modifyNode.getData()).compareTo(grandparent.getData()) > 0 ? grandparent.getLeft() : grandparent.getRight();
+
+                    if(grandparent != super.getRoot()) { // Only shift when grandparent is not the root
+                        parent = editedNodes.get(editedNodes.indexOf(grandparent) - 1);
+                        grandparent = editedNodes.get(editedNodes.indexOf(grandparent) - 2);
+                        uncle = grandparent.getLeft();
+                    }
+                } else if(!uncleIsRed) {
+                    if(modifyNode == parent.getRight()) {
+                        modifyNode = parent;
+                        parent = editedNodes.get(editedNodes.indexOf(parent) - 1);
+
+                        if(parent != super.getRoot()) { // Only shift when parent is not the root
+                            grandparent = editedNodes.get(editedNodes.indexOf(parent) - 1);
+                        }
+
+                        uncle = grandparent.getLeft();
+                        rotateLeft(modifyNode, parent);
+                        parent = grandparent.getRight();
+                    }
+
+                    parent.setRed(false);
+                    grandparent.setRed(true);
+                    rotateRight(grandparent, modifyNode);
                 }
-            } else if(grandparent.getRight() != null && grandparent.getRightData().equals(parent.getData())) { // Uncle on left side
+            } else { // Uncle is on the left
                 uncle = grandparent.getLeft();
+                uncleIsRed = uncle != null && uncle.isRed();
                 if(this.reColour(grandparent, parent, uncle)) {
-                    position = "right";
-
                     modifyNode = grandparent;
-                    parent = editedNodes.get(editedNodes.indexOf(grandparent) - 1);
-                    grandparent = editedNodes.get(editedNodes.indexOf(parent) - 1);
-                    uncle = ((Comparable) modifyNode.getData()).compareTo(grandparent.getData()) > 0 ? grandparent.getLeft() : grandparent.getRight();
+
+                    if(grandparent != super.getRoot()) { // Only shift when grandparent is not the root
+                        parent = editedNodes.get(editedNodes.indexOf(grandparent) - 1);
+                        grandparent = editedNodes.get(editedNodes.indexOf(grandparent) - 1);
+                        uncle = grandparent.getRight();
+                    }
+
+                } else if(!uncleIsRed) {
+                    if(modifyNode == parent.getLeft()) {
+                        modifyNode = parent;
+                        parent = editedNodes.get(editedNodes.indexOf(parent) - 1);
+
+                        if(parent != super.getRoot()) { // Only shift when parent is not the root
+                            grandparent = editedNodes.get(editedNodes.indexOf(parent) - 1);
+                        }
+
+                        uncle = grandparent.getRight();
+                        rotateRight(modifyNode, parent);
+                        parent = grandparent.getLeft();
+                    }
+
+                    parent.setRed(false);
+                    grandparent.setRed(true);
+                    rotateLeft(grandparent, modifyNode);
                 }
             }
+        }
+        super.getRoot().setRed(false);
+    }
 
-            boolean uncleIsRed = uncle != null && uncle.isRed();
+    public void rotateRight(Node<E> rotationNode, Node<E> parent){
+        Node<E> leftChild = rotationNode.getLeft();
+        Node<E> leftChildRightChild = leftChild.getRight();
+        if (!parent.isRed()) {
+            parent.setRight(leftChild);
+        }
+        rotationNode.setLeft(leftChildRightChild);
+        leftChild.setRight(rotationNode);
 
-            // Insert case 2 check (uncle is black (triangle))
-            if(position.equals("right") && grandparent.getLeft() == parent && !uncleIsRed) { // Triangle must be on left side
-                this.rotateLeft(grandparent, modifyNode, parent);
-                modifyNode = parent;
-                parent = grandparent.getLeft();
-                position = "left";
-            } else if (position.equals("left") && grandparent.getRight() == parent && !uncleIsRed) { // Triangle must be on right side
-                rotateRight(grandparent, modifyNode, parent);
-                modifyNode = parent;
-                parent = grandparent.getRight();
-                position = "right";
-            }
+        connectRotation(parent, rotationNode, leftChild);
 
-            // Insert case 3 check (uncle is black (line))
-            if(position.equals("right") && grandparent.getRight() == parent && !uncleIsRed) {
-                rotateLeft(parent, modifyNode, grandparent);
-                if(grandparent == super.getRoot()) {
-                    super.setRoot(parent);
-                }
-            } else if (position.equals("left") && grandparent.getLeft() == parent && !uncleIsRed) {
-                rotateRight(parent, modifyNode, grandparent);
-                if(grandparent == super.getRoot()) {
-                    super.setRoot(parent);
-                }
+    }
+
+    public void rotateLeft(Node<E> rotationNode, Node<E> parent) {
+        Node<E> rightChild = rotationNode.getRight();
+        Node<E> rightChildLeftChild = rightChild.getLeft();
+        if(!parent.isRed()) {
+            parent.setLeft(rightChild);
+        }
+        rotationNode.setRight(rightChildLeftChild);
+        rightChild.setLeft(rotationNode);
+
+        connectRotation(parent, rotationNode, rightChild);
+    }
+
+    public void connectRotation(Node<E> parent, Node<E> rotationNode, Node<E> newChild) {
+        if(rotationNode == super.getRoot()) {
+            super.setRoot(newChild);
+        } else if (parent.isRed()) {
+            Node<E> rotationParent = editedNodes.get(editedNodes.indexOf(rotationNode) - 1);
+            if(rotationParent.getRight() == rotationNode) {
+                editedNodes.get(editedNodes.indexOf(rotationNode) - 1).setRight(newChild);
+            } else {
+                editedNodes.get(editedNodes.indexOf(rotationNode) - 1).setLeft(newChild);
             }
         }
     }
 
     private boolean reColour(Node<E> grandparent, Node<E> parent, Node<E> uncle) {
         if(uncle != null && uncle.isRed()) {
-            uncle.setRed(false);
-            uncle.setVersion(numVersions);
-            grandparent.setRed(true);
             parent.setRed(false);
+            uncle.setRed(false);
+            grandparent.setRed(true);
+            uncle.setVersion(numVersions);
             return true;
         }
 
         return false;
-    }
-
-    /**
-     * Rotates nodes left around the rotation node to satisfy red black rules
-     * @param comboNode The node in the rotation pattern that is not a rotation node or violating node
-     * @param violatingNode The node violating the red-black rules
-     * @param rotationNode The node on which the rotation takes place
-     */
-    private void rotateLeft(Node<E> comboNode, Node<E> violatingNode, Node<E> rotationNode) {
-        boolean isTriangle = rotationNode.getRight() == violatingNode;
-
-        rotationNode.setRight(isTriangle ? violatingNode.getLeft() : comboNode.getLeft());
-        comboNode.setLeft(isTriangle ? violatingNode : rotationNode);
-
-        if(isTriangle) {
-            violatingNode.setLeft(rotationNode);
-        } else {
-            comboNode.setRight(violatingNode);
-            rotationNode.setRed(true);
-            comboNode.setRed(false);
-        }
-    }
-
-    /**
-     * Rotates nodes right around the rotation node to satisfy red black rules
-     * @param comboNode The node in the rotation pattern that is not a rotation node or violating node
-     * @param violatingNode The node violating the red-black rules
-     * @param rotationNode The node on which the rotation takes place
-     */
-    private void rotateRight(Node<E> comboNode, Node<E> violatingNode, Node<E> rotationNode) {
-        boolean isTriangle = rotationNode.getLeft() == violatingNode;
-
-        rotationNode.setLeft(isTriangle ? violatingNode.getRight() : comboNode.getRight());
-        comboNode.setRight(isTriangle ? violatingNode : rotationNode);
-
-        if(isTriangle) {
-            violatingNode.setRight(rotationNode);
-        } else {
-            comboNode.setLeft(violatingNode);
-            rotationNode.setRed(true);
-            comboNode.setRed(false);
-        }
     }
 
     @Override
@@ -229,16 +236,16 @@ public class DynamicRedBlackTree<E> extends AbstractBinaryTree<E> {
     }
 
     public Node<E> test() {
-        Node<E> first = new Node<E>((E) Integer.valueOf(9), null, null, true);
-        Node<E> second = new Node<E>((E) Integer.valueOf(13), null, null, true);
-        Node<E> third = new Node<E>((E) Integer.valueOf(23), null, null, true);
+        Node<E> first = new Node<>((E) Integer.valueOf(9), null, null, true);
+        Node<E> second = new Node<>((E) Integer.valueOf(13), null, null, true);
+        Node<E> third = new Node<>((E) Integer.valueOf(23), null, null, true);
 
         Node <E> forth = new Node<>((E) Integer.valueOf(12), first, second, false);
         Node <E> fifth = new Node<>((E) Integer.valueOf(19), null, third, false);
 
-        Node<E> sixth = new Node<E>((E) Integer.valueOf(15), forth, fifth, true);
-        Node<E> seventh = new Node<E>((E) Integer.valueOf(5), null, null, false);
+        Node<E> sixth = new Node<>((E) Integer.valueOf(15), forth, fifth, true);
+        Node<E> seventh = new Node<>((E) Integer.valueOf(5), null, null, false);
 
-        return new Node<E>((E) Integer.valueOf(8), seventh, sixth, false);
+        return new Node<>((E) Integer.valueOf(8), seventh, sixth, false);
     }
 }

@@ -11,14 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
 
-/**
-
- * Almost Complete GUI - just need to finish the code when pressing the buttons and updating
- * the number of nodes in the tree.. WIll only build once ExpNode subclasses are made
- * @author seth hall
- *
- **/
-
 public class ExpressionTreeGUI extends JPanel implements ActionListener {
 
     private final JButton addButton, removeButton;
